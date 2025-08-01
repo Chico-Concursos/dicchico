@@ -41,7 +41,7 @@
 
   <script>
     // URL do Proxy Apps Script
-    const scriptURL = "const scriptURL = "https://script.google.com/macros/s/AKfycbxhAnorHVB7wRoRq_F_ov6WfHvRyFLbH2binS6E3DugVyghVHFPyPGXimEFTyCrrKNEKg/exec";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxhAnorHVB7wRoRq_F_ov6WfHvRyFLbH2binS6E3DugVyghVHFPyPGXimEFTyCrrKNEKg/exec";
 
     // Função para carregar as anotações
     async function loadNotes() {
@@ -71,7 +71,7 @@
       }
     }
 
-    // Função para adicionar uma nova anotação
+    // Função para adicionar uma nota
     async function addNote() {
       const noteInput = document.getElementById("noteInput");
       const note = noteInput.value;
@@ -85,7 +85,7 @@
         await axios.post(scriptURL, {
           action: "ADD",
           note: note,
-          user: "Usuário Exemplo" // Você pode personalizar de onde vem o usuário
+          user: "Usuário Exemplo" // Campo fictício para usuário
         });
         noteInput.value = ""; // Limpa a área de texto
         loadNotes(); // Atualiza a lista
@@ -94,7 +94,7 @@
       }
     }
 
-    // Função para editar uma anotação existente
+    // Função para editar uma nota
     async function editNote(id, currentNote) {
       const newNote = prompt("Edite sua anotação:", currentNote);
       if (newNote === null || !newNote.trim()) {
@@ -105,7 +105,7 @@
       try {
         await axios.post(scriptURL, {
           action: "EDIT",
-          id: id,
+          id,
           note: newNote
         });
         loadNotes(); // Atualiza a lista
@@ -114,17 +114,15 @@
       }
     }
 
-    // Função para deletar uma anotação
+    // Função para deletar uma nota
     async function deleteNote(id) {
       const confirmDelete = confirm("Tem certeza que deseja excluir esta anotação?");
-      if (!confirmDelete) {
-        return;
-      }
+      if (!confirmDelete) return;
 
       try {
         await axios.post(scriptURL, {
           action: "DELETE",
-          id: id
+          id
         });
         loadNotes(); // Atualiza a lista
       } catch (error) {
@@ -132,8 +130,7 @@
       }
     }
 
-    // Carregar anotações ao carregar a página
-    loadNotes();
+    loadNotes(); // Carregar anotações ao abrir a página
   </script>
 </body>
 </html>
