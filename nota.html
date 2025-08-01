@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bloco de Anotações</title>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
@@ -8,6 +10,10 @@
       font-family: Arial, sans-serif;
       max-width: 600px;
       margin: 20px auto;
+      padding: 20px;
+      background-color: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 8px;
     }
     textarea {
       width: 100%;
@@ -27,59 +33,106 @@
 </head>
 <body>
   <h1>Bloco de Anotações</h1>
-  <textarea id="newNote" placeholder="Escreva uma anotação aqui..."></textarea>
+  <textarea id="noteInput" placeholder="Escreva uma nova anotação..."></textarea>
   <button onclick="addNote()">Salvar Anotação</button>
-  
+
   <h2>Minhas Anotações</h2>
   <div id="notes"></div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwvXD0zwZqxeTxn9sdq4nWXSOx4_lQxv7n8T8LmrSQZpQZiwXPJGF6lv2KVtbuu5EBo/exec"; // Substitua pelo ID real do Apps Script
+    // URL do Proxy Apps Script
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyUaZbTHkankKSvE_qNWMh9Y9-06Fmpby0xqr29s2VY5Seak5OluvPHH-LLWsqCWLg-vw/exec";
 
-    // Carrega as anotações ao abrir a página
+    // Função para carregar as anotações
     async function loadNotes() {
-      const response = await axios.get(`${scriptURL}?action=GET`);
-      const notes = response.data.notes || [];
-      const notesDiv = document.getElementById("notes");
-      notesDiv.innerHTML = "";
+      try {
+        const response = await axios.get(`${scriptURL}?action=GET`);
+        const notes = response.data.notes || [];
+        const notesDiv = document.getElementById("notes");
+        notesDiv.innerHTML = "";
 
-      notes.forEach((note, index) => {
-        const noteElement = document.createElement("div");
-        noteElement.className = "note";
-        noteElement.innerHTML = `
-          <p>${note}</p>
-          <button onclick="editNote(${index}, '${note}')">Editar</button>
-          <button onclick="deleteNote(${index})">Deletar</button>
-        `;
-        notesDiv.appendChild(noteElement);
-      });
+        // Renderiza as anotações
+        notes.forEach((note) => {
+          const noteDiv = document.createElement("div");
+          noteDiv.className = "note";
+          noteDiv.innerHTML = `
+            <strong>ID:</strong> ${note.id}<br>
+            <strong>Nota:</strong> ${note.note}<br>
+            <strong>Data de Criação:</strong> ${new Date(note.createdAt).toLocaleString()}<br>
+            <strong>Última Modificação:</strong> ${new Date(note.modifiedAt).toLocaleString()}<br>
+            <strong>Usuário:</strong> ${note.user}<br>
+            <button onclick="editNote(${note.id}, '${note.note}')">Editar</button>
+            <button onclick="deleteNote(${note.id})">Deletar</button>
+          `;
+          notesDiv.appendChild(noteDiv);
+        });
+      } catch (error) {
+        console.error("Erro ao carregar anotações:", error);
+      }
     }
 
-    // Adiciona uma nova anotação
+    // Função para adicionar uma nova anotação
     async function addNote() {
-      const newNote = document.getElementById("newNote").value;
-      if (!newNote) return alert("Por favor, insira uma anotação!");
-      await axios.post(scriptURL, { action: "ADD", note: newNote });
-      document.getElementById("newNote").value = "";
-      loadNotes();
+      const noteInput = document.getElementById("noteInput");
+      const note = noteInput.value;
+
+      if (!note.trim()) {
+        alert("Insira uma anotação antes de salvar!");
+        return;
+      }
+
+      try {
+        await axios.post(scriptURL, {
+          action: "ADD",
+          note: note,
+          user: "Usuário Exemplo" // Você pode personalizar de onde vem o usuário
+        });
+        noteInput.value = ""; // Limpa a área de texto
+        loadNotes(); // Atualiza a lista
+      } catch (error) {
+        console.error("Erro ao adicionar anotação:", error);
+      }
     }
 
-    // Edita uma anotação existente
-    async function editNote(index, currentNote) {
+    // Função para editar uma anotação existente
+    async function editNote(id, currentNote) {
       const newNote = prompt("Edite sua anotação:", currentNote);
-      if (!newNote) return;
-      await axios.post(scriptURL, { action: "EDIT", index, note: newNote });
-      loadNotes();
+      if (newNote === null || !newNote.trim()) {
+        alert("Edição cancelada ou conteúdo inválido!");
+        return;
+      }
+
+      try {
+        await axios.post(scriptURL, {
+          action: "EDIT",
+          id: id,
+          note: newNote
+        });
+        loadNotes(); // Atualiza a lista
+      } catch (error) {
+        console.error("Erro ao editar anotação:", error);
+      }
     }
 
-    // Deleta uma anotação
-    async function deleteNote(index) {
-      if (!confirm("Tem certeza que deseja deletar esta anotação?")) return;
-      await axios.post(scriptURL, { action: "DELETE", index });
-      loadNotes();
+    // Função para deletar uma anotação
+    async function deleteNote(id) {
+      const confirmDelete = confirm("Tem certeza que deseja excluir esta anotação?");
+      if (!confirmDelete) {
+        return;
+      }
+
+      try {
+        await axios.post(scriptURL, {
+          action: "DELETE",
+          id: id
+        });
+        loadNotes(); // Atualiza a lista
+      } catch (error) {
+        console.error("Erro ao excluir anotação:", error);
+      }
     }
 
-    // Inicializa as anotações
+    // Carregar anotações ao carregar a página
     loadNotes();
   </script>
 </body>
