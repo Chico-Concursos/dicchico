@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bloco de Anotações</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin-bottom: 10px;
+    }
+    .note {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .note button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bloco de Anotações</h1>
+  <textarea id="newNote" placeholder="Escreva uma anotação aqui..."></textarea>
+  <button onclick="addNote()">Salvar Anotação</button>
+  
+  <h2>Minhas Anotações</h2>
+  <div id="notes"></div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Substitua pelo ID real do Apps Script
+
+    // Carrega as anotações ao abrir a página
+    async function loadNotes() {
+      const response = await axios.get(`${scriptURL}?action=GET`);
+      const notes = response.data.notes || [];
+      const notesDiv = document.getElementById("notes");
+      notesDiv.innerHTML = "";
+
+      notes.forEach((note, index) => {
+        const noteElement = document.createElement("div");
+        noteElement.className = "note";
+        noteElement.innerHTML = `
+          <p>${note}</p>
+          <button onclick="editNote(${index}, '${note}')">Editar</button>
+          <button onclick="deleteNote(${index})">Deletar</button>
+        `;
+        notesDiv.appendChild(noteElement);
+      });
+    }
+
+    // Adiciona uma nova anotação
+    async function addNote() {
+      const newNote = document.getElementById("newNote").value;
+      if (!newNote) return alert("Por favor, insira uma anotação!");
+      await axios.post(scriptURL, { action: "ADD", note: newNote });
+      document.getElementById("newNote").value = "";
+      loadNotes();
+    }
+
+    // Edita uma anotação existente
+    async function editNote(index, currentNote) {
+      const newNote = prompt("Edite sua anotação:", currentNote);
+      if (!newNote) return;
+      await axios.post(scriptURL, { action: "EDIT", index, note: newNote });
+      loadNotes();
+    }
+
+    // Deleta uma anotação
+    async function deleteNote(index) {
+      if (!confirm("Tem certeza que deseja deletar esta anotação?")) return;
+      await axios.post(scriptURL, { action: "DELETE", index });
+      loadNotes();
+    }
+
+    // Inicializa as anotações
+    loadNotes();
+  </script>
+</body>
+</html>
