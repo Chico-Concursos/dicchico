@@ -39,6 +39,35 @@
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
     }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .user-info span {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .logout-btn {
+      background: linear-gradient(135deg, #D2AC47, #F7EF8A, #AE8625);
+      color: #0D0D09;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+      font-size: 1.05rem;
+    }
+    .logout-btn:hover {
+      background: linear-gradient(135deg, #F4E883, #D2AC47, #AE8625);
+      color: #fff;
+      transform: scale(1.05);
+    }
+    .logout-btn:active {
+       transform: translateY(0);
+    }
     .container {
       max-width: 1600px;
       width: 100%;
@@ -84,7 +113,23 @@
       background-position: right 15px center;
       background-size: 18px;
     }
-    #search:focus, #word-dropdown:focus {
+    #category-filter {
+      flex: 1;
+      padding: 15px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: rgba(34, 34, 34, 0.8);
+      color: #F4E883;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D2AC47' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 18px;
+    }
+    #search:focus, #word-dropdown:focus, #category-filter:focus {
       outline: none;
       border-color: #D2AC47;
       box-shadow: 0 0 15px rgba(210, 172, 71, 0.4);
@@ -176,11 +221,122 @@
       margin: 15px 0;
       border-left: 4px solid #c62828;
     }
+    #loginModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-container {
+      background-color: #111;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 0 20px rgba(210,172,71,0.6);
+    }
+    .login-container h2 {
+      color: #D2AC47;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #555;
+      background-color: #222;
+      color: #fff;
+    }
+    .login-button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #D2AC47, #F7EF8A, #AE8625);
+      color: #0D0D09;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .login-button:hover {
+      background: linear-gradient(135deg, #F4E883, #D2AC47, #AE8625);
+      color: #fff;
+    }
+    .login-button:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+    .login-button .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0, 0, 0, 0.3);
+      border-radius: 50%;
+      border-top-color: black;
+      animation: spin 1s ease-in-out infinite;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    #loginError {
+      color: #ff5555;
+      margin-top: 15px;
+      text-align: center;
+      display: none;
+    }
+    .loading-indicator {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10001;
+      text-align: center;
+    }
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(210, 172, 71, 0.3);
+      border-radius: 50%;
+      border-top-color: #D2AC47;
+      animation: spin 1s ease-in-out infinite;
+      margin: 0 auto 15px;
+    }
+    .loading-text {
+      color: #D2AC47;
+      font-size: 1.2em;
+    }
   </style>
 </head>
 <body>
   <div class="top-bar">
     <h1><i class="fas fa-book"></i> Dicionário - Chico Concursos</h1>
+    <div class="user-info" id="user-info-section" style="display: none;">
+      <span id="user-email-display"></span>
+      <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
   </div>
   
   <div class="container">
@@ -190,6 +346,10 @@
         <select id="word-dropdown" onchange="selectWord(this.value)">
           <option value="">Todas as palavras</option>
           <option class="dropdown-loading">Carregando palavras...</option>
+        </select>
+        <select id="category-filter" onchange="filterByCategory(this.value)">
+          <option value="">Todas as categorias</option>
+          <option class="dropdown-loading">Carregando categorias...</option>
         </select>
       </div>
       <div class="progress-bar">
@@ -204,8 +364,36 @@
     </div>
     
     <div class="footer">
-      <p>Dicionário criado com dados da planilha Google Sheets | <span id="word-count">0</span> palavras carregadas</p>
+      <p> <span id="word-count">0</span> palavras carregadas</p>
     </div>
+  </div>
+
+  <!-- Modal de Login -->
+  <div id="loginModal" style="display: flex;">
+    <div class="login-container">
+      <h2><i class="fas fa-lock"></i> Acesso ao Dicionário</h2>
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="loginEmail">Email:</label>
+          <input type="email" id="loginEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Senha:</label>
+          <input type="password" id="loginPassword" required>
+        </div>
+        <button type="submit" class="login-button" id="loginSubmitBtn">
+          <span id="loginBtnText">Acessar</span>
+          <div class="spinner" id="loginSpinner"></div>
+        </button>
+      </form>
+      <div id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- Indicador de carregamento -->
+  <div class="loading-indicator" id="loadingIndicator">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Carregando dicionário...</div>
   </div>
 
   <!-- Biblioteca para ler CSV (PapaParse) -->
@@ -217,9 +405,142 @@
     const progressFill = document.getElementById('progress-fill');
     const wordCountElement = document.getElementById('word-count');
     const wordDropdown = document.getElementById('word-dropdown');
+    const categoryFilter = document.getElementById('category-filter');
+    let isAuthenticated = false;
+    let userEmail = '';
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfeIybUQvl-cb_VEBITzKF9Nbw97FgWMGWVF6pW-McV5MwVpJOoytWcVKl5dIApOjGZw/exec";
+
+    // Funções de autenticação
+    function showLoginError(message) {
+      const errorElement = document.getElementById('loginError');
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    }
+
+    function hideLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+      isAuthenticated = true;
+      document.getElementById('user-info-section').style.display = 'flex';
+      document.getElementById('user-email-display').textContent = userEmail;
+      
+      // Mostrar indicador de carregamento
+      document.getElementById('loadingIndicator').style.display = 'block';
+    }
+
+    function hideLoadingIndicator() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    function setLoginButtonLoading(isLoading) {
+      const button = document.getElementById('loginSubmitBtn');
+      const spinner = document.getElementById('loginSpinner');
+      const text = document.getElementById('loginBtnText');
+      if (isLoading) {
+        button.disabled = true;
+        text.style.visibility = 'hidden';
+        spinner.style.display = 'block';
+      } else {
+        button.disabled = false;
+        text.style.visibility = 'visible';
+        spinner.style.display = 'none';
+      }
+    }
+
+    function logout() {
+      // Limpar dados de autenticação
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userEmail');
+      // Redefinir estado
+      isAuthenticated = false;
+      userEmail = '';
+      // Mostrar tela de login
+      document.getElementById('loginModal').style.display = 'flex';
+      document.getElementById('user-info-section').style.display = 'none';
+      document.getElementById('results').innerHTML = '<p class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando dicionário...</p>';
+      dictionary = [];
+      totalWords = 0;
+      wordCountElement.textContent = '0';
+    }
+
+    async function login(event) {
+      if (event) event.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) {
+        showLoginError('Por favor, preencha todos os campos.');
+        return;
+      }
+      
+      setLoginButtonLoading(true);
+      document.getElementById('loginError').style.display = 'none';
+      
+      try {
+        const formData = new URLSearchParams();
+        formData.append('email', email);
+        formData.append('password', password);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: formData,
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+          userEmail = email;
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('userEmail', userEmail);
+          hideLoginModal();
+          loadDictionary();
+        } else {
+          showLoginError(result.error || 'Erro durante a autenticação.');
+          setLoginButtonLoading(false);
+        }
+      } catch (error) {
+        console.error('Erro no login:', error);
+        if (error.name === 'AbortError') {
+          showLoginError('Tempo limite excedido. Verifique sua conexão e tente novamente.');
+        } else {
+          showLoginError('Erro ao conectar com o servidor. Tente novamente.');
+        }
+        setLoginButtonLoading(false);
+      }
+    }
+
+    function checkAuthentication() {
+      const savedAuth = localStorage.getItem('isAuthenticated');
+      const savedEmail = localStorage.getItem('userEmail');
+      if (savedAuth === 'true' && savedEmail) {
+        isAuthenticated = true;
+        userEmail = savedEmail;
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('user-info-section').style.display = 'flex';
+        document.getElementById('user-email-display').textContent = userEmail;
+        document.getElementById('loadingIndicator').style.display = 'block';
+        loadDictionary();
+      } else {
+        document.getElementById('loginModal').style.display = 'flex';
+      }
+    }
 
     // Função para carregar dados com tratamento de erros
     async function loadDictionary() {
+      if (!isAuthenticated) {
+        document.getElementById('results').innerHTML = '<p class="loading">Por favor, faça login para acessar o dicionário.</p>';
+        hideLoadingIndicator();
+        return;
+      }
+      
       try {
         console.log("Tentando carregar dados...");
         
@@ -246,13 +567,13 @@
         console.log("Colunas encontradas:", parsed.meta.fields);
         
         // Verifica se as colunas estão corretas
-        if (!parsed.meta.fields || parsed.meta.fields.length < 2) {
+        if (!parsed.meta.fields || parsed.meta.fields.length < 3) {
           throw new Error('Formato de colunas inválido');
         }
         
         // Filtra linhas válidas e conta palavras
         dictionary = parsed.data.filter(item => 
-          item.Palavras && item.Definições
+          item.Palavras && item.Definições && item.Categoria
         );
         
         console.log("Palavras carregadas:", dictionary.length);
@@ -267,6 +588,9 @@
         // Popula a lista suspensa com as palavras
         populateWordDropdown();
         
+        // Popula o filtro de categoria
+        populateCategoryFilter();
+        
         // Atualiza barra de progresso
         progressFill.style.width = '100%';
         
@@ -274,6 +598,7 @@
         setTimeout(() => {
           document.getElementById('results').innerHTML = 
             `<p>Digite pelo menos 2 letras para buscar no dicionário.</p>`;
+          hideLoadingIndicator();
         }, 500);
         
       } catch (error) {
@@ -283,19 +608,21 @@
             <i class="fas fa-exclamation-triangle"></i> 
             <strong>Erro ao carregar dicionário:</strong> ${error.message}
             <br><br>
-            <small>Verifique se o link do CSV está correto e se as colunas se chamam "Palavras" e "Definições"</small>
+            <small>Verifique se o link do CSV está correto e se as colunas se chamam "Palavras", "Definições" e "Categoria"</small>
           </div>`;
         progressFill.style.background = '#e74c3c';
         
         // Remove loading da dropdown
         wordDropdown.innerHTML = '<option value="">Todas as palavras</option>';
+        categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+        hideLoadingIndicator();
       }
     }
 
     // Carrega o dicionário quando a página carrega
-    window.addEventListener('DOMContentLoaded', loadDictionary);
+    window.addEventListener('DOMContentLoaded', checkAuthentication);
 
-    // Função para popular a lista suspensa
+    // Função para popular a lista suspensa de palavras
     function populateWordDropdown() {
       // Remove a mensagem de loading
       const loadingOption = wordDropdown.querySelector('.dropdown-loading');
@@ -317,6 +644,29 @@
       });
     }
 
+    // Função para popular o filtro de categoria
+    function populateCategoryFilter() {
+      // Remove a mensagem de loading
+      const loadingOption = categoryFilter.querySelector('.dropdown-loading');
+      if (loadingOption) {
+        categoryFilter.removeChild(loadingOption);
+      }
+      
+      // Extrai todas as categorias únicas
+      const categories = [...new Set(dictionary.map(item => item.Categoria))];
+      
+      // Ordena as categorias alfabeticamente
+      categories.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      
+      // Adiciona as categorias ao filtro
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+      });
+    }
+
     // Função para quando uma palavra for selecionada na dropdown
     function selectWord(word) {
       if (word) {
@@ -325,10 +675,42 @@
       }
     }
 
+    // Função para filtrar por categoria
+    function filterByCategory(category) {
+      // Se nenhuma categoria foi selecionada, mostra todas as palavras
+      if (!category) {
+        searchWord();
+        return;
+      }
+      
+      // Filtra apenas as palavras da categoria selecionada
+      const filtered = dictionary.filter(item => 
+        item.Categoria === category
+      );
+      
+      // Exibe resultados
+      if (filtered.length > 0) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = filtered.map(item => `
+          <div class="result">
+            <div class="word">${item.Palavras}</div>
+            <div class="definition">${item.Definições}</div>
+            <div class="category-badge"><i class="fas fa-book-open"></i> ${item.Categoria}</div>
+          </div>
+        `).join('');
+      } else {
+        document.getElementById('results').innerHTML = 
+          `<p class="no-results"><i class="fas fa-search"></i> Nenhuma palavra encontrada na categoria "${category}".</p>`;
+      }
+    }
+
     // Função de busca
     function searchWord() {
+      if (!isAuthenticated) return;
+      
       const searchTerm = document.getElementById('search').value.toLowerCase().trim();
       const resultsDiv = document.getElementById('results');
+      const selectedCategory = document.getElementById('category-filter').value;
       
       // Atualiza barra de progresso durante a busca
       progressFill.style.width = '70%';
@@ -343,9 +725,14 @@
       }
 
       // Filtra palavras que começam com o termo
-      const filtered = dictionary.filter(item => 
+      let filtered = dictionary.filter(item => 
         item.Palavras?.toLowerCase().startsWith(searchTerm)
       );
+
+      // Aplica filtro de categoria se necessário
+      if (selectedCategory) {
+        filtered = filtered.filter(item => item.Categoria === selectedCategory);
+      }
 
       // Exibe resultados após breve atraso para efeito visual
       setTimeout(() => {
@@ -357,7 +744,7 @@
             <div class="result">
               <div class="word">${item.Palavras}</div>
               <div class="definition">${item.Definições}</div>
-              <div class="category-badge"><i class="fas fa-book-open"></i> Termo técnico</div>
+              <div class="category-badge"><i class="fas fa-book-open"></i> ${item.Categoria}</div>
             </div>
           `).join('');
         } else {
@@ -371,6 +758,9 @@
         }, 800);
       }, 300);
     }
+
+    // Adiciona evento de submit ao formulário de login
+    document.getElementById('loginForm').addEventListener('submit', login);
   </script>
 </body>
 </html>
