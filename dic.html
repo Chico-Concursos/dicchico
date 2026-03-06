@@ -544,11 +544,10 @@
       try {
         console.log("Tentando carregar dados...");
         
-        // Usando proxy para evitar problemas de CORS
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTNyK_AG9J7c5lKfdzoL15HDTN3Z6V6PCDIi-25KFRREo6OFIPAZTukz8KDDlx_JrwcajtRoaNLivwr/pub?output=csv';
+        // Lendo diretamente da nova planilha (sem proxy para evitar bloqueios do navegador)
+        const targetUrl = 'https://docs.google.com/spreadsheets/d/19b4PTLzrk5dhNL5GXZXZi7KagFL7OsrngloQ8XfmaV8/export?format=csv';
         
-        const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
+        const response = await fetch(targetUrl);
         
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
@@ -594,10 +593,9 @@
         // Atualiza barra de progresso
         progressFill.style.width = '100%';
         
-        // Remove mensagem de carregamento
+        // Remove mensagem de carregamento e aciona a busca para listar todas as palavras
         setTimeout(() => {
-          document.getElementById('results').innerHTML = 
-            `<p>Digite pelo menos 2 letras para buscar no dicionário.</p>`;
+          searchWord();
           hideLoadingIndicator();
         }, 500);
         
@@ -715,14 +713,7 @@
       // Atualiza barra de progresso durante a busca
       progressFill.style.width = '70%';
       
-      if (searchTerm.length < 2) {
-        setTimeout(() => {
-          progressFill.style.width = '0%';
-          resultsDiv.innerHTML = 
-            `<p>Digite pelo menos 2 letras para buscar no dicionário.</p>`;
-        }, 300);
-        return;
-      }
+     // A trava de 2 letras foi removida para permitir listar tudo com o campo vazio
 
       // Filtra palavras que começam com o termo
       let filtered = dictionary.filter(item => 
